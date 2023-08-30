@@ -66,10 +66,10 @@ def read_all_did(requestid,responseid):
 
 
 if '__main__' == __name__:
-    # requestid = int(input("Please input UDS request id [7xx]: "),16)
-    # responseid = int(input("Please input UDS response id [7xx]: "),16)
-    requestid = 0x741
-    responseid  = 0x749
+    requestid = int(input("Please input UDS request id [7xx]: "),16)
+    responseid = int(input("Please input UDS response id [7xx]: "),16)
+    # requestid = 0x741
+    # responseid  = 0x749
     result = read_all_did(requestid,responseid)
     x = PrettyTable()
     x.field_names = ['DID NO.','HEX DATA','LATIN DATA']
