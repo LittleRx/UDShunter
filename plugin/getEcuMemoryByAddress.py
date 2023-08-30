@@ -7,6 +7,7 @@ from udsoncan.client import Client
 from udsoncan.Response import Response
 from udsoncan.Request import Request
 from udsoncan import services
+from udsoncan import MemoryLocation
 import udsoncan.configs
 import isotp
 
@@ -25,19 +26,8 @@ isotp_params = {
     'can_fd' : True                        # Support CAN FD (Need to change python-can configuration)
 }
 
-class BinCodeC(udsoncan.DidCodec):
-    def __init__(self, packstr: str | None = None):
-        super().__init__(packstr)
-    def encode(self, *did_value: Any) -> bytes:
-        return did_value[0]
-    def decode(self, did_payload: bytes) -> Any:
-        return did_payload
-    def __len__(self) -> int:
-        raise self.ReadAllRemainingData
+def read_all_Memory(requestid,responseid):
 
-def read_all_did(requestid,responseid):
-
-    DIDLIST = []
 
     can_init()
     bus = can.Bus()
@@ -47,37 +37,12 @@ def read_all_did(requestid,responseid):
     stack.set_sleep_timing(0, 0)                                                                 # Speed First (do not sleep)
     conn = PythonIsoTpConnection(stack)                                                          # interface between Application and Transport layer
 
-    with Client(conn, request_timeout=2) as client:                                              # Application layer (UDS protocol)
-        for i in range(0x0000,0xFFFF):
-            try:
-                req = services.ReadDataByIdentifier.make_request([i],{i: BinCodeC})
-                response = client.send_request(req)
-                DIDLIST.append([i,response.data[2:]])
-            except Exception as e:
-                if e.response.code != 0x13:
-                    print(hex(i),hex(e.response.code))
-                pass
+    with Client(conn, request_timeout=2) as client:   # Application layer (UDS protocol)
+        memeoryrange = MemoryLocation(0x100,0x100)
+        req = services.ReadMemoryByAddress.make_request(memeoryrange)
+        response = client.send_request(req)
     bus.shutdown()
-    print(DIDLIST)
-    return DIDLIST
-    
-def character_pharse(data):
-    newdata = ""
-    for i in data:
-        if i>0x1F and not 0x7A<i<0xA0:
-            newdata += bytes([i]).decode('latin')
-        else:
-            newdata += '*'
-    return newdata
 
-if '__main__' == __name__:
-    requestid = int(input("Please input UDS request id [7xx]: "),16)
-    responseid = int(input("Please input UDS response id [7xx]: "),16)
-    # requestid = 0x741
-    # responseid  = 0x749
-    result = read_all_did(requestid,responseid)
-    x = PrettyTable()
-    x.field_names = ['DID NO.','HEX DATA','LATIN DATA']
-    for i in result:
-        x.add_row([hex(i[0]),i[1].hex(),character_pharse(i[1])])
-    print(x)
+
+read_all_Memory(0x741,0x749)
+    
