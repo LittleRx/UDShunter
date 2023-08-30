@@ -35,31 +35,27 @@ class BinCodeC(udsoncan.DidCodec):
     def __len__(self) -> int:
         raise self.ReadAllRemainingData
 
-def read_all_did(requestid,responseid):
-
-    DIDLIST = []
-
+def write_did_by_identifier(requestid,responseid,did,value):
+    result = None
     can_init()
     bus = can.Bus()
-
     tp_addr = isotp.Address(isotp.AddressingMode.Normal_11bits, txid=requestid, rxid=responseid) # Network layer addressing scheme
     stack = isotp.CanStack(bus=bus, address=tp_addr, params=isotp_params)                        # Network/Transport layer (IsoTP protocol)
     stack.set_sleep_timing(0, 0)                                                                 # Speed First (do not sleep)
     conn = PythonIsoTpConnection(stack)                                                          # interface between Application and Transport layer
 
     with Client(conn, request_timeout=2) as client:                                              # Application layer (UDS protocol)
-        for i in range(0x0000,0xFFFF):
-            try:
-                req = services.ReadDataByIdentifier.make_request([i],{i: BinCodeC})
-                response = client.send_request(req)
-                DIDLIST.append([i,response.data[2:]])
-            except Exception as e:
-                if e.response.code != 0x13:
-                    print(hex(i),hex(e.response.code))
-                pass
+        try:
+            req = services.WriteDataByIdentifier.make_request(did,value,{did: BinCodeC})
+            response = client.send_request(req)
+            print("SUCCESS ???????")
+            print(response.data)
+            result = True
+        except:
+            result = False
     bus.shutdown()
-    return DIDLIST
-    
+    return result
+
 def character_pharse(data):
     newdata = ""
     for i in data:
@@ -72,11 +68,10 @@ def character_pharse(data):
 if '__main__' == __name__:
     requestid = int(input("Please input UDS request id [7xx]: "),16)
     responseid = int(input("Please input UDS response id [7xx]: "),16)
-    # requestid = 0x741
-    # responseid  = 0x749
-    result = read_all_did(requestid,responseid)
+    did = int(input("Please input UDS DID [F190]: "),16)
+    value = bytes.fromhex(input("Please input UDS DID value: "))
+    result = write_did_by_identifier(requestid,responseid,did,value)
     x = PrettyTable()
-    x.field_names = ['DID NO.','HEX DATA','DATA LENGTH','LATIN DATA']
-    for i in result:
-        x.add_row([hex(i[0]),i[1].hex(),len(i[1]),character_pharse(i[1])])
+    x.field_names = ['DID NO.','HEX DATA','LATIN DATA','INPUT RESULT']
+    x.add_row([1,value.hex(),character_pharse(value),result])
     print(x)
