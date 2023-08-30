@@ -63,7 +63,14 @@ def read_all_did(requestid,responseid):
     print(DIDLIST)
     return DIDLIST
     
-
+def character_pharse(data):
+    newdata = ""
+    for i in data:
+        if i>0x1F and not 0x7A<i<0xA0:
+            newdata += bytes([i]).decode('latin')
+        else:
+            newdata += '*'
+    return newdata
 
 if '__main__' == __name__:
     requestid = int(input("Please input UDS request id [7xx]: "),16)
@@ -74,5 +81,5 @@ if '__main__' == __name__:
     x = PrettyTable()
     x.field_names = ['DID NO.','HEX DATA','LATIN DATA']
     for i in result:
-        x.add_row([hex(i[0]),i[1].hex(),i[1].decode('latin').replace('\n','</br>')])
+        x.add_row([hex(i[0]),i[1].hex(),character_pharse(i[1])])
     print(x)
