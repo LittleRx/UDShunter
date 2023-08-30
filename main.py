@@ -1,24 +1,48 @@
-# from can.interface import Bus
-
-
-# sudo modprobe vcan
-# Create a vcan network interface with a specific name
-# sudo ip link add dev vcan0 type vcan
-# sudo ip link set vcan0 up
-
-import time
 import can
+import time
 
-interface = 'socketcan'
-channel = 'vcan0'
 
-def producer(id):
-    """:param id: Spam the bus with messages including the data id."""
-    bus = can.Bus(channel=channel, interface=interface)
-    for i in range(10):
-        msg = can.Message(arbitration_id=0xc0ffee, data=[id, i, 0, 1, 3, 1, 4, 1], is_extended_id=False)
-        bus.send(msg)
 
-    time.sleep(1)
+# sudo modprobe can
+# sudo modprobe can-raw
+# sudo modprobe peak_usb
+# sudo ip link set can0 up type can fd on bitrate 500000 dbitrate 2000000 sample-point 0.875 
 
-producer(10)
+
+
+class Server:
+    def __init__(self,uds_id):
+        self.uds_request_id = uds_id
+        self.uds_response_id = 0x000
+        self.uds_ecu_secret_key = 0x000
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def main():
+
+    ecu01 = Server(0x701)
+
+
+
+
+if __name__ == "__main__":
+    main()
