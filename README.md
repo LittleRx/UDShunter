@@ -7,6 +7,8 @@ UDS hunter is a software which is made for scan UDS id and pentest services.
 
 ```
 > pip install python-can
+> pip install udsoncan
+> pip install can-isotp
 ```
 
 ## TODO
